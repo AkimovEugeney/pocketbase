@@ -20,7 +20,6 @@ RUN set -eux; \
   /pb/pocketbase --version
 
 RUN mkdir -p /pb/pb_data
-VOLUME ["/pb/pb_data"]
 
 EXPOSE 8080
 
