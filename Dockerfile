@@ -1,18 +1,23 @@
-FROM alpine:latest
+FROM alpine:3.20
 
 ARG PB_VERSION=0.37.5
-ARG TARGETARCH
 
-RUN apk add --no-cache unzip ca-certificates wget
+RUN apk add --no-cache ca-certificates unzip curl
 
 RUN set -eux; \
-  if [ "${TARGETARCH:-amd64}" = "arm64" ]; then ARCH="arm64"; else ARCH="amd64"; fi; \
+  ARCH_RAW="$(uname -m)"; \
+  case "$ARCH_RAW" in \
+    x86_64) ARCH="amd64" ;; \
+    aarch64|arm64) ARCH="arm64" ;; \
+    *) echo "Unsupported architecture: $ARCH_RAW"; exit 1 ;; \
+  esac; \
   URL="https://github.com/pocketbase/pocketbase/releases/download/v${PB_VERSION}/pocketbase_${PB_VERSION}_linux_${ARCH}.zip"; \
   echo "Downloading $URL"; \
-  wget -O /tmp/pb.zip "$URL"; \
+  curl -fL "$URL" -o /tmp/pb.zip; \
   unzip /tmp/pb.zip -d /pb/; \
   rm -f /tmp/pb.zip; \
-  chmod +x /pb/pocketbase
+  chmod +x /pb/pocketbase; \
+  /pb/pocketbase --version
 
 RUN mkdir -p /pb/pb_data
 VOLUME ["/pb/pb_data"]
