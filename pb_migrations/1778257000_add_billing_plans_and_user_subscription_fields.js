@@ -46,87 +46,86 @@ migrate((app) => {
     "UPDATE users SET trial_used = 0 WHERE trial_used IS NULL",
   ).execute();
 
-  let billingPlans;
-
   try {
-    billingPlans = app.findCollectionByNameOrId("billing_plans");
-  } catch (_) {
-    billingPlans = new Collection({
-      name: "billing_plans",
-      type: "base",
-      listRule: "@request.auth.id != \"\" && is_active = true",
-      viewRule: "@request.auth.id != \"\" && is_active = true",
-      createRule: null,
-      updateRule: null,
-      deleteRule: null,
-      fields: [
-        {
-          name: "code",
-          type: "text",
-          required: true,
-          min: 2,
-          max: 32,
-          pattern: "^[a-z0-9_]+$",
-        },
-        {
-          name: "title",
-          type: "text",
-          required: true,
-          min: 2,
-          max: 100,
-        },
-        {
-          name: "is_active",
-          type: "bool",
-          required: true,
-        },
-        {
-          name: "students_limit",
-          type: "number",
-          required: false,
-          min: 0,
-          onlyInt: true,
-        },
-        {
-          name: "students_unlimited",
-          type: "bool",
-          required: true,
-        },
-        {
-          name: "allow_student_subscriptions",
-          type: "bool",
-          required: true,
-        },
-        {
-          name: "allow_group_lessons",
-          type: "bool",
-          required: true,
-        },
-        {
-          name: "allow_homework_module",
-          type: "bool",
-          required: true,
-        },
-        {
-          name: "price_month",
-          type: "number",
-          required: false,
-          min: 0,
-          onlyInt: true,
-        },
-        {
-          name: "price_year",
-          type: "number",
-          required: false,
-          min: 0,
-          onlyInt: true,
-        },
-      ],
-      indexes: [
-        "CREATE UNIQUE INDEX IF NOT EXISTS ux_billing_plans_code ON billing_plans (code)",
-      ],
-    });
-  }
+    const existingBillingPlans = app.findCollectionByNameOrId("billing_plans");
+    app.delete(existingBillingPlans);
+  } catch (_) {}
+
+  const billingPlans = new Collection({
+    name: "billing_plans",
+    type: "base",
+    listRule: "@request.auth.id != \"\" && is_active = true",
+    viewRule: "@request.auth.id != \"\" && is_active = true",
+    createRule: null,
+    updateRule: null,
+    deleteRule: null,
+    fields: [
+      {
+        name: "code",
+        type: "text",
+        required: true,
+        min: 2,
+        max: 32,
+        pattern: "^[a-z0-9_]+$",
+      },
+      {
+        name: "title",
+        type: "text",
+        required: true,
+        min: 2,
+        max: 100,
+      },
+      {
+        name: "is_active",
+        type: "bool",
+        required: true,
+      },
+      {
+        name: "students_limit",
+        type: "number",
+        required: false,
+        min: 0,
+        onlyInt: true,
+      },
+      {
+        name: "students_unlimited",
+        type: "bool",
+        required: false,
+      },
+      {
+        name: "allow_student_subscriptions",
+        type: "bool",
+        required: false,
+      },
+      {
+        name: "allow_group_lessons",
+        type: "bool",
+        required: false,
+      },
+      {
+        name: "allow_homework_module",
+        type: "bool",
+        required: false,
+      },
+      {
+        name: "price_month",
+        type: "number",
+        required: false,
+        min: 0,
+        onlyInt: true,
+      },
+      {
+        name: "price_year",
+        type: "number",
+        required: false,
+        min: 0,
+        onlyInt: true,
+      },
+    ],
+    indexes: [
+      "CREATE UNIQUE INDEX IF NOT EXISTS ux_billing_plans_code ON billing_plans (code)",
+    ],
+  });
 
   app.save(billingPlans);
 
@@ -170,15 +169,7 @@ migrate((app) => {
   ];
 
   for (const planData of planSeeds) {
-    const found = app.findRecordsByFilter(
-      "billing_plans",
-      `code = \"${planData.code}\"`,
-      "",
-      1,
-      0,
-    );
-
-    const record = found.length > 0 ? found[0] : new Record(billingPlans);
+    const record = new Record(billingPlans);
 
     record.set("code", planData.code);
     record.set("title", planData.title);
