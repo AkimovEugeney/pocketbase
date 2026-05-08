@@ -87,7 +87,7 @@ migrate((app) => {
       ],
       indexes: [
         "CREATE UNIQUE INDEX IF NOT EXISTS ux_billing_tx_inv_id ON billing_transactions (inv_id)",
-        "CREATE INDEX IF NOT EXISTS idx_billing_tx_owner_created ON billing_transactions (owner, created)",
+        "CREATE INDEX IF NOT EXISTS idx_billing_tx_owner ON billing_transactions (owner)",
       ],
     });
   }
