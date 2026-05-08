@@ -1,4 +1,3 @@
-/ # cat /tmp/pb_migrations/*.js
 /// <reference path="../pb_data/types.d.ts" />
 migrate((app) => {
   const snapshot = [
@@ -1523,4 +1522,3 @@ migrate((app) => {
 }, (app) => {
   return null;
 })
-/ # 
