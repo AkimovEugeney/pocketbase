@@ -19,8 +19,13 @@ RUN set -eux; \
   chmod +x /pb/pocketbase; \
   /pb/pocketbase --version
 
-RUN mkdir -p /pb/pb_data
+RUN mkdir -p /pb/pb_data /pb/pb_migrations /pb/pb_hooks
+
+WORKDIR /pb
+
+COPY pb_migrations /pb/pb_migrations
+COPY pb_hooks /pb/pb_hooks
 
 EXPOSE 8080
 
-CMD ["sh", "-c", "/pb/pocketbase migrate up --dir /pb/pb_data && /pb/pocketbase serve --http=0.0.0.0:${PORT:-8080} --dir /pb/pb_data"]
+CMD ["sh", "-c", "/pb/pocketbase migrate up --dir /pb/pb_data --migrationsDir /pb/pb_migrations && /pb/pocketbase serve --http=0.0.0.0:${PORT:-8080} --dir /pb/pb_data --hooksDir /pb/pb_hooks"]
